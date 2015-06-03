@@ -37,3 +37,11 @@ Table 2 4/13
 *Relative proportions with sparsity randomly added*
 
 2.18 - TableFactory_41913.py:Line 625
+
+Goals
+=====
+1. Subcompositional coherence. Iteratively remove OTUs.  Can only test on nonzero tables
+2. Scale dependence.  Change the scale of different rows
+3. Sparsity. Vary the amount of sparsity per table
+4. Rarefaction depth. Vary the rarefaction depth
+5. Essential zeros
