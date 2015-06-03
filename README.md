@@ -40,7 +40,7 @@ Table 2 4/13
 
 Goals
 =====
-1. Subcompositional coherence. Iteratively remove OTUs.  Can only test on nonzero tables
+1. Subcompositional coherence. Iteratively remove OTUs.  
 2. Scale dependence.  Change the scale of different rows
 3. Sparsity. Vary the amount of sparsity per table
 4. Rarefaction depth. Vary the rarefaction depth
