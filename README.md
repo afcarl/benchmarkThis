@@ -45,3 +45,8 @@ Goals
 3. Sparsity. Vary the amount of sparsity per table
 4. Rarefaction depth. Vary the rarefaction depth
 5. Essential zeros
+
+Metrics
+=======
+1. ROC curves
+2. Precision/Recall curves
