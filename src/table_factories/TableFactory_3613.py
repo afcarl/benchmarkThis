@@ -22,29 +22,36 @@ seed(0)
 #####################
 
 # choose 60 otus and relate them via o1^o2-> decrease to o2.
-# note, odd otus will be affected by the last even otu. o0 will decrease 01, 
-# o2 will decrease 03 etc.  
+# note, odd otus will be affected by the last even otu. o0 will decrease 01,
+# o2 will decrease 03 etc.
+D = 30
 strength = .5
-os = lognorm.rvs(3,0,size=(60,50))
+os = lognorm.rvs(3, 0, size=(60, 50))
 amensally_related_1d_st_5 = []
-for i in range(30):
+truth_amensally_related_1d_st_5 = np.zeros(2*D, 2*D)
+for i in range(D):
     ind_i, ind_j = 2*i, 2*i+1
+    truth_amensally_related_1d_st_5[ind_i, ind_j] = 1
     am_otu = amensal_1d(os[ind_i], os[ind_j], strength)
     amensally_related_1d_st_5.extend([os[ind_i], am_otu])
 
 strength = .3
 os = lognorm.rvs(3,0,size=(60,50))
 amensally_related_1d_st_3 = []
-for i in range(30):
+truth_amensally_related_1d_st_3 = np.zeros(2*D, 2*D)
+for i in range(D):
     ind_i, ind_j = 2*i, 2*i+1
+    truth_amensally_related_1d_st_3[ind_i, ind_j] = 1
     am_otu = amensal_1d(os[ind_i], os[ind_j], strength)
     amensally_related_1d_st_3.extend([os[ind_i], am_otu])
 
 strength = .2
 os = lognorm.rvs(3,0,size=(60,50))
 amensally_related_1d_st_2 = []
-for i in range(30):
+truth_amensally_related_1d_st_2 = np.zeros(2*D, 2*D)
+for i in range(D):
     ind_i, ind_j = 2*i, 2*i+1
+    truth_amensally_related_1d_st_2[ind_i, ind_j] = 1
     am_otu = amensal_1d(os[ind_i], os[ind_j], strength)
     amensally_related_1d_st_2.extend([os[ind_i], am_otu])
 
@@ -54,31 +61,43 @@ for i in range(30):
 #####################
 
 # require a network of 2 otus to be present to cause the amensal relationship
-# eg O1^O2 -> decrease in O3. pick 90 otus where this happens. 
+# eg O1^O2 -> decrease in O3. pick 90 otus where this happens.
 # note, o3 will be decreased if o1^o2
 strength = .5
 amensally_related_2d_st_5 = []
+truth_amensally_related_2d_st_5 = np.zeros(3*D, 3*D)
 os = lognorm.rvs(3,0,size=(90,50))
-for i in range(30):
+for i in range(D):
     ind_i, ind_j, ind_k = 3*i, 3*i+1, 3*i+2
+    truth_amensally_related_2d_st_5[ind_i, ind_j] = 1
+    truth_amensally_related_2d_st_5[ind_j, ind_k] = 1
+    truth_amensally_related_2d_st_5[ind_i, ind_k] = 1
     depressed_otu = amensal_nd(vstack([os[ind_i], os[ind_j], os[ind_k]]), strength)
     amensally_related_2d_st_5.extend([os[ind_i], os[ind_j], depressed_otu])
 
 
 strength = .3
 amensally_related_2d_st_3 = []
+truth_amensally_related_2d_st_3 = np.zeros(3*D, 3*D)
 os = lognorm.rvs(3,0,size=(90,50))
-for i in range(30):
+for i in range(D):
     ind_i, ind_j, ind_k = 3*i, 3*i+1, 3*i+2
+    truth_amensally_related_2d_st_3[ind_i, ind_j] = 1
+    truth_amensally_related_2d_st_3[ind_j, ind_k] = 1
+    truth_amensally_related_2d_st_3[ind_i, ind_k] = 1
     depressed_otu = amensal_nd(vstack([os[ind_i], os[ind_j], os[ind_k]]), strength)
     amensally_related_2d_st_3.extend([os[ind_i], os[ind_j], depressed_otu])
 
 
 strength = .2
 amensally_related_2d_st_2 = []
+truth_amensally_related_2d_st_2 = np.zeros(3*D, 3*D)
 os = lognorm.rvs(3,0,size=(90,50))
-for i in range(30):
+for i in range(D):
     ind_i, ind_j, ind_k = 3*i, 3*i+1, 3*i+2
+    truth_amensally_related_2d_st_2[ind_i, ind_j] = 1
+    truth_amensally_related_2d_st_2[ind_j, ind_k] = 1
+    truth_amensally_related_2d_st_2[ind_i, ind_k] = 1
     depressed_otu = amensal_nd(vstack([os[ind_i], os[ind_j], os[ind_k]]), strength)
     amensally_related_2d_st_2.extend([os[ind_i], os[ind_j], depressed_otu])
 
@@ -88,29 +107,35 @@ for i in range(30):
 #####################
 
 # choose 60 otus and relate them via o1^o2-> increase to o2.
-# note, odd otus will be affected by the last even otu. o0 will increase 01, 
-# o2 will increase 03 etc.  
+# note, odd otus will be affected by the last even otu. o0 will increase 01,
+# o2 will increase 03 etc.
 strength = .5
 os = lognorm.rvs(3,0,size=(60,50))
 commensually_related_1d_st_5 = []
-for i in range(30):
+truth_amensally_related_1d_st_5 = np.zeros(2*D, 2*D)
+for i in range(D):
     ind_i, ind_j = 2*i, 2*i+1
+    truth_commensually_related_1d_st_5[ind_i, ind_j] = 1
     boosted_otu = commensal_1d(os[ind_i], os[ind_j], strength)
     commensually_related_1d_st_5.extend([os[ind_i], boosted_otu])
 
 strength = .3
 os = lognorm.rvs(3,0,size=(60,50))
 commensually_related_1d_st_3 = []
-for i in range(30):
+truth_amensally_related_1d_st_3 = np.zeros(2*D, 2*D)
+for i in range(D):
     ind_i, ind_j = 2*i, 2*i+1
+    truth_commensually_related_1d_st_3[ind_i, ind_j] = 1
     boosted_otu = commensal_1d(os[ind_i], os[ind_j], strength)
     commensually_related_1d_st_3.extend([os[ind_i], boosted_otu])
 
 strength = .2
 os = lognorm.rvs(3,0,size=(60,50))
 commensually_related_1d_st_2 = []
-for i in range(30):
+truth_amensally_related_1d_st_2 = np.zeros(2*D, 2*D)
+for i in range(D):
     ind_i, ind_j = 2*i, 2*i+1
+    truth_commensually_related_1d_2[ind_i, ind_j] = 1
     boosted_otu = commensal_1d(os[ind_i], os[ind_j], strength)
     commensually_related_1d_st_2.extend([os[ind_i], boosted_otu])
 
@@ -120,31 +145,43 @@ for i in range(30):
 #####################
 
 # require a network of 2 otus to be present to cause the commensal relationship
-# eg O1^O2 -> increase in O3. pick 90 otus where this happens. 
+# eg O1^O2 -> increase in O3. pick 90 otus where this happens.
 # note, o3 will be increased if o1^o2
 strength = .5
 commensually_related_2d_st_5 = []
+truth_amensally_related_2d_st_5 = np.zeros(3*D, 3*D)
 os = lognorm.rvs(3,0,size=(90,50))
-for i in range(30):
+for i in range(D):
     ind_i, ind_j, ind_k = 3*i, 3*i+1, 3*i+2
+    truth_commensually_related_2d_st_5[ind_i, ind_j] = 1
+    truth_commensually_related_2d_st_5[ind_j, ind_k] = 1
+    truth_commensually_related_2d_st_5[ind_i, ind_k] = 1
     boosted_otu = commensal_nd(vstack([os[ind_i], os[ind_j], os[ind_k]]),strength)
     commensually_related_2d_st_5.extend([os[ind_i], os[ind_j], boosted_otu])
 
 
 strength = .3
 commensually_related_2d_st_3 = []
+truth_commensually_related_2d_st_3 = np.zeros(3*D, 3*D)
 os = lognorm.rvs(3,0,size=(90,50))
 for i in range(30):
     ind_i, ind_j, ind_k = 3*i, 3*i+1, 3*i+2
+    truth_commensually_related_2d_st_3[ind_i, ind_j] = 1
+    truth_commensually_related_2d_st_3[ind_j, ind_k] = 1
+    truth_commensually_related_2d_st_3[ind_i, ind_k] = 1
     boosted_otu = commensal_nd(vstack([os[ind_i], os[ind_j], os[ind_k]]),strength)
     commensually_related_2d_st_3.extend([os[ind_i], os[ind_j], boosted_otu])
 
 
 strength = .2
 commensually_related_2d_st_2 = []
+truth_commensually_related_2d_st_2 = np.zeros(3*D, 3*D)
 os = lognorm.rvs(3,0,size=(90,50))
 for i in range(30):
     ind_i, ind_j, ind_k = 3*i, 3*i+1, 3*i+2
+    truth_commensually_related_2d_st_2[ind_i, ind_j] = 1
+    truth_commensually_related_2d_st_2[ind_j, ind_k] = 1
+    truth_commensually_related_2d_st_2[ind_i, ind_k] = 1
     boosted_otu = commensal_nd(vstack([os[ind_i], os[ind_j], os[ind_k]]),strength)
     commensually_related_2d_st_2.extend([os[ind_i], os[ind_j], boosted_otu])
 
@@ -157,11 +194,13 @@ for i in range(30):
 # create 30 pairs of related otus where o1^o2 -> boosting both
 strength = .5
 mutually_related_1d_st_5 = []
+truth_mutually_related_1d_st_5 = np.zeros(2*D, 2*D)
 os = lognorm.rvs(3,0,size=(60,50))
-for i in range(30): # no base otu to skip
+for i in range(D): # no base otu to skip
     ind_i = 2*i
     ind_j = 2*i + 1
-    # even numbered otus will be related to the next odd otu, i.e. 0 and 1 are 
+    truth_mutually_related_1d_st_5[ind_i, ind_j] = 1
+    # even numbered otus will be related to the next odd otu, i.e. 0 and 1 are
     # mutualistic, 2,3 and so forth
     moi, moj = mutual_1d(os[ind_i], os[ind_j], strength)
     mutually_related_1d_st_5.extend([moi, moj])
@@ -169,11 +208,13 @@ for i in range(30): # no base otu to skip
 
 strength = .3
 mutually_related_1d_st_3 = []
+truth_mutually_related_1d_st_3 = np.zeros(2*D, 2*D)
 os = lognorm.rvs(3,0,size=(60,50))
 for i in range(30): # no base otu to skip
     ind_i = 2*i
     ind_j = 2*i + 1
-    # even numbered otus will be related to the next odd otu, i.e. 0 and 1 are 
+    truth_mutually_related_1d_st_3[ind_i, ind_j] = 1
+    # even numbered otus will be related to the next odd otu, i.e. 0 and 1 are
     # mutualistic, 2,3 and so forth
     moi, moj = mutual_1d(os[ind_i], os[ind_j], strength)
     mutually_related_1d_st_3.extend([moi, moj])
@@ -181,16 +222,16 @@ for i in range(30): # no base otu to skip
 
 strength = .2
 mutually_related_1d_st_2 = []
+truth_mutually_related_1d_st_2 = np.zeros(2*D, 2*D)
 os = lognorm.rvs(3,0,size=(60,50))
 for i in range(30): # no base otu to skip
     ind_i = 2*i
     ind_j = 2*i + 1
-    # even numbered otus will be related to the next odd otu, i.e. 0 and 1 are 
+    truth_mutually_related_1d_st_2[ind_i, ind_j] = 1
+    # even numbered otus will be related to the next odd otu, i.e. 0 and 1 are
     # mutualistic, 2,3 and so forth
     moi, moj = mutual_1d(os[ind_i], os[ind_j], strength)
     mutually_related_1d_st_2.extend([moi, moj])
-
-
 
 ####################
 # mutualism 2d
@@ -198,12 +239,16 @@ for i in range(30): # no base otu to skip
 
 # create 30 triplets of related otus where o1^o2^o3 -> boost for all otus
 # note that its o1 and o2 that are the network inducing the o3 boost so that
-# if xor(o1, o2)==True then no boost to o3. 
+# if xor(o1, o2)==True then no boost to o3.
 strength = .5
 mutually_related_2d_st_5 = []
+truth_mutually_related_2d_st_5 = np.zeros(3*D, 3*D)
 os = lognorm.rvs(3,0,size=(90,50))
 for i in range(30):
     ind_i, ind_j, ind_k = 3*i, 3*i + 1, 3*i + 2
+    truth_mutually_related_2d_st_5[ind_i, ind_j] = 1
+    truth_mutually_related_2d_st_5[ind_i, ind_k] = 1
+    truth_mutually_related_2d_st_5[ind_j, ind_k] = 1
     # otus will be related in groups of 3 0,1,2 are in mutualistic relationshi
     # as are 3,4,5 etc
     moi, moj, mok = mutual_nd(os.take([ind_i, ind_j, ind_k], 0), strength)
@@ -211,9 +256,13 @@ for i in range(30):
 
 strength = .3
 mutually_related_2d_st_3 = []
+truth_mutually_related_2d_st_3 = np.zeros(3*D, 3*D)
 os = lognorm.rvs(3,0,size=(90,50))
 for i in range(30):
     ind_i, ind_j, ind_k = 3*i, 3*i + 1, 3*i + 2
+    truth_mutually_related_2d_st_5[ind_i, ind_j] = 1
+    truth_mutually_related_2d_st_5[ind_i, ind_k] = 1
+    truth_mutually_related_2d_st_5[ind_j, ind_k] = 1
     # otus will be related in groups of 3 0,1,2 are in mutualistic relationshi
     # as are 3,4,5 etc
     moi, moj, mok = mutual_nd(os.take([ind_i, ind_j, ind_k], 0), strength)
@@ -221,15 +270,17 @@ for i in range(30):
 
 strength = .2
 mutually_related_2d_st_2 = []
-os = lognorm.rvs(3,0,size=(90,50))
+truth_mutually_related_2d_st_2 = np.zeros(3*D, 3*D)
+os = lognorm.rvs(3, 0, size=(90, 50))
 for i in range(30):
     ind_i, ind_j, ind_k = 3*i, 3*i + 1, 3*i + 2
+    truth_mutually_related_2d_st_2[ind_i, ind_j] = 1
+    truth_mutually_related_2d_st_2[ind_i, ind_k] = 1
+    truth_mutually_related_2d_st_2[ind_j, ind_k] = 1
     # otus will be related in groups of 3 0,1,2 are in mutualistic relationshi
     # as are 3,4,5 etc
     moi, moj, mok = mutual_nd(os.take([ind_i, ind_j, ind_k], 0), strength)
     mutually_related_2d_st_2.extend([moi, moj, mok])
-
-
 
 ####################
 # parasatism 1d
@@ -238,9 +289,11 @@ for i in range(30):
 # create 30 pairs of otus where o1 ^ o2 -> increase o1, decrease o2
 strength = .5
 os = lognorm.rvs(3,0,size=(60,50))
+truth_parasitically_related_1d_st_5 = np.zeros(2*D, 2*D)
 parasitically_related_1d_st_5 = []
 for i in range(30):
     ind_i, ind_j = 2*i, 2*i + 1
+    truth_parasitically_related_1d_st_5[ind_i, ind_j] = 1
     # even numbered otus will be the parasite so 0 eats 1, 2 eats 3 etc.
     moi, moj = parasite_1d(os[ind_i], os[ind_j], strength)
     parasitically_related_1d_st_5.extend([moi, moj])
@@ -248,18 +301,22 @@ for i in range(30):
 
 strength = .3
 os = lognorm.rvs(3,0,size=(60,50))
+truth_parasitically_related_1d_st_3 = np.zeros(2*D, 2*D)
 parasitically_related_1d_st_3 = []
 for i in range(30):
     ind_i, ind_j = 2*i, 2*i + 1
+    truth_parasitically_related_1d_st_3[ind_i, ind_j] = 1
     # even numbered otus will be the parasite so 0 eats 1, 2 eats 3 etc.
     moi, moj = parasite_1d(os[ind_i], os[ind_j], strength)
     parasitically_related_1d_st_3.extend([moi, moj])
 
 strength = .2
 os = lognorm.rvs(3,0,size=(60,50))
+truth_parasitically_related_1d_st_2 = np.zeros(2*D, 2*D)
 parasitically_related_1d_st_2 = []
 for i in range(30):
     ind_i, ind_j = 2*i, 2*i + 1
+    truth_parasitically_related_1d_st_2[ind_i, ind_j] = 1
     # even numbered otus will be the parasite so 0 eats 1, 2 eats 3 etc.
     moi, moj = parasite_1d(os[ind_i], os[ind_j], strength)
     parasitically_related_1d_st_2.extend([moi, moj])
@@ -276,28 +333,40 @@ for i in range(30):
 
 strength = .5
 parasitically_related_2d_st_5 = []
+truth_parasitically_related_2d_st_5 = np.zeros(3*D, 3*D)
 os = lognorm.rvs(3,0,size=(90,50))
 for i in range(30):
     ind_i, ind_j, ind_k = 3*i, 3*i + 1, 3*i + 2
-    # otus will be related in groups of 3 o2 eats o1 and o0. 
+    truth_parasitically_related_2d_st_5[ind_i, ind_j] = 1
+    truth_parasitically_related_2d_st_5[ind_i, ind_k] = 1
+    truth_parasitically_related_2d_st_5[ind_j, ind_k] = 1
+    # otus will be related in groups of 3 o2 eats o1 and o0.
     moi, moj, mok = parasite_nd(os.take([ind_i, ind_j, ind_k], 0), strength)
     parasitically_related_2d_st_5.extend([moi, moj, mok])
 
 strength = .3
 parasitically_related_2d_st_3 = []
+truth_parasitically_related_2d_st_3 = np.zeros(3*D, 3*D)
 os = lognorm.rvs(3,0,size=(90,50))
 for i in range(30):
     ind_i, ind_j, ind_k = 3*i, 3*i + 1, 3*i + 2
-    # otus will be related in groups of 3 o2 eats o1 and o0. 
+    truth_parasitically_related_2d_st_3[ind_i, ind_j] = 1
+    truth_parasitically_related_2d_st_3[ind_i, ind_k] = 1
+    truth_parasitically_related_2d_st_3[ind_j, ind_k] = 1
+    # otus will be related in groups of 3 o2 eats o1 and o0.
     moi, moj, mok = parasite_nd(os.take([ind_i, ind_j, ind_k], 0), strength)
     parasitically_related_2d_st_3.extend([moi, moj, mok])
 
 strength = .2
 parasitically_related_2d_st_2 = []
+truth_parasitically_related_2d_st_3 = np.zeros(3*D, 3*D)
 os = lognorm.rvs(3,0,size=(90,50))
 for i in range(30):
     ind_i, ind_j, ind_k = 3*i, 3*i + 1, 3*i + 2
-    # otus will be related in groups of 3 o2 eats o1 and o0. 
+    truth_parasitically_related_2d_st_3[ind_i, ind_j] = 1
+    truth_parasitically_related_2d_st_3[ind_i, ind_k] = 1
+    truth_parasitically_related_2d_st_3[ind_j, ind_k] = 1
+    # otus will be related in groups of 3 o2 eats o1 and o0.
     moi, moj, mok = parasite_nd(os.take([ind_i, ind_j, ind_k], 0), strength)
     parasitically_related_2d_st_2.extend([moi, moj, mok])
 
@@ -310,10 +379,12 @@ for i in range(30):
 strength = .5
 os = lognorm.rvs(3,0,size=(60,50))
 competitively_related_1d_st_5 = []
+truth_parasitically_related_1d_st_5 = np.zeros(2*D, 2*D)
 for i in range(30):
     ind_i, ind_j = 2*i, 2*i + 1
-    # even numbered otus will be the related to the next odd otu as in o2 
-    # related to o3, o4 with o5. 
+    truth_parasitically_related_1d_st_5[ind_i, ind_j] = 1
+    # even numbered otus will be the related to the next odd otu as in o2
+    # related to o3, o4 with o5.
     moi, moj = competition_1d(os[ind_i], os[ind_j], strength)
     competitively_related_1d_st_5.extend([moi, moj])
 
@@ -321,20 +392,24 @@ for i in range(30):
 strength = .3
 os = lognorm.rvs(3,0,size=(60,50))
 competitively_related_1d_st_3 = []
+truth_parasitically_related_1d_st_3 = np.zeros(2*D, 2*D)
 for i in range(30):
     ind_i, ind_j = 2*i, 2*i + 1
-    # even numbered otus will be the related to the next odd otu as in o2 
-    # related to o3, o4 with o5. 
+    truth_parasitically_related_1d_st_3[ind_i, ind_j] = 1
+    # even numbered otus will be the related to the next odd otu as in o2
+    # related to o3, o4 with o5.
     moi, moj = competition_1d(os[ind_i], os[ind_j], strength)
     competitively_related_1d_st_3.extend([moi, moj])
 
 strength = .2
 os = lognorm.rvs(3,0,size=(60,50))
 competitively_related_1d_st_2 = []
+truth_parasitically_related_1d_st_2 = np.zeros(2*D, 2*D)
 for i in range(30):
     ind_i, ind_j = 2*i, 2*i + 1
-    # even numbered otus will be the related to the next odd otu as in o2 
-    # related to o3, o4 with o5. 
+    truth_parasitically_related_1d_st_2[ind_i, ind_j] = 1
+    # even numbered otus will be the related to the next odd otu as in o2
+    # related to o3, o4 with o5.
     moi, moj = competition_1d(os[ind_i], os[ind_j], strength)
     competitively_related_1d_st_2.extend([moi, moj])
 
@@ -344,33 +419,45 @@ for i in range(30):
 ####################
 
 # create 30 triplets of otus where o1^o2^o3 -> decrease for all
-# note that o1 and o2 form the network and thus must be present for the 
-# competition to appear. 
+# note that o1 and o2 form the network and thus must be present for the
+# competition to appear.
 
 strength = .5
 competitively_related_2d_st_5 = []
+truth_parasitically_related_2d_st_5 = np.zeros(3*D, 3*D)
 os = lognorm.rvs(3,0,size=(90,50))
 for i in range(30):
     ind_i, ind_j, ind_k = 3*i, 3*i + 1, 3*i + 2
-    # otus will be related in groups of 3 o2 eats o1 and o0. 
+    truth_parasitically_related_2d_st_5[ind_i, ind_j] = 1
+    truth_parasitically_related_2d_st_5[ind_j, ind_k] = 1
+    truth_parasitically_related_2d_st_5[ind_i, ind_k] = 1
+    # otus will be related in groups of 3 o2 eats o1 and o0.
     moi, moj, mok = competition_nd(os.take([ind_j, ind_j, ind_k], 0),strength)
     competitively_related_2d_st_5.extend([moi, moj, mok])
 
 strength = .3
 competitively_related_2d_st_3 = []
+truth_parasitically_related_2d_st_3 = np.zeros(3*D, 3*D)
 os = lognorm.rvs(3,0,size=(90,50))
 for i in range(30):
     ind_i, ind_j, ind_k = 3*i, 3*i + 1, 3*i + 2
-    # otus will be related in groups of 3 o2 eats o1 and o0. 
+    truth_parasitically_related_2d_st_3[ind_i, ind_j] = 1
+    truth_parasitically_related_2d_st_3[ind_j, ind_k] = 1
+    truth_parasitically_related_2d_st_3[ind_i, ind_k] = 1
+    # otus will be related in groups of 3 o2 eats o1 and o0.
     moi, moj, mok = competition_nd(os.take([ind_j, ind_j, ind_k], 0),strength)
     competitively_related_2d_st_3.extend([moi, moj, mok])
 
 strength = .2
 competitively_related_2d_st_2 = []
+truth_parasitically_related_2d_st_2 = np.zeros(3*D, 3*D)
 os = lognorm.rvs(3,0,size=(90,50))
 for i in range(30):
+    truth_parasitically_related_2d_st_2[ind_i, ind_j] = 1
+    truth_parasitically_related_2d_st_2[ind_j, ind_k] = 1
+    truth_parasitically_related_2d_st_2[ind_i, ind_k] = 1
     ind_i, ind_j, ind_k = 3*i, 3*i + 1, 3*i + 2
-    # otus will be related in groups of 3 o2 eats o1 and o0. 
+    # otus will be related in groups of 3 o2 eats o1 and o0.
     moi, moj, mok = competition_nd(os.take([ind_j, ind_j, ind_k], 0),strength)
     competitively_related_2d_st_2.extend([moi, moj, mok])
 
@@ -378,14 +465,16 @@ for i in range(30):
 # obligate syntroph 1d
 ####################
 
-# choose 10 otus randomly and introduce 10 dependants in an obligate 
-# syntrophic manner. 
+# choose 10 otus randomly and introduce 10 dependants in an obligate
+# syntrophic manner.
 # note that the even otus will be the independent ones and the odd otus will be
-# dependent. 
+# dependent.
 strength = .5
 obligate_related_1d_st_5 = []
+truth_parasitically_related_1d_st_5 = np.zeros(2*D, 2*D)
 os = lognorm.rvs(3,0,size=(10,50))
 for otu in os:
+    truth_parasitically_related_1d_st_5[ind_i, ind_j] = 1
     obs_otu = obligate_syntroph_1d(otu, strength)
     obligate_related_1d_st_5.extend([otu, obs_otu])
 
@@ -433,13 +522,12 @@ for i in range(30):
 
 
 
-
 print 'eco done'
 
 
 ######################
 # stitching the table together
-# 
+#
 # all in order
 # partial_obligate_syntrophic_related_2d,
 # partial_obligate_syntrophic_related_1d,
@@ -536,9 +624,9 @@ eco_table2 = vstack(
 #                 null table                     #
 ##################################################
 
-from scipy.stats.distributions import (gamma, beta, lognorm, nakagami, chi2, 
+from scipy.stats.distributions import (gamma, beta, lognorm, nakagami, chi2,
     uniform)
-from generators.null import (model1_otu, model1_table, model2_table, 
+from generators.null import (model1_otu, model1_table, model2_table,
     model3_table)
 
 ##############
@@ -549,8 +637,8 @@ from generators.null import (model1_otu, model1_table, model2_table,
 
 seed(10000000)
 
-# all tables will have 50 samples 
-# generate 100 otus from lognorm distribution 2,0,1 
+# all tables will have 50 samples
+# generate 100 otus from lognorm distribution 2,0,1
 dfs_and_params = [[lognorm, 2, 0]]*100
 otus_lognorm_2_0 = model1_table(dfs_and_params, 50)
 
@@ -617,7 +705,7 @@ print 'null done'
 #                 ga table                       #
 ##################################################
 
-# run the genetic algorithms method on a known 
+# run the genetic algorithms method on a known
 # otu sequence and maximize graphic dissimilarity
 # pearson distance is about .007
 from numpy.random import seed
@@ -645,7 +733,7 @@ print 'ga done'
 
 
 #NOTE: the input rho_mat must be positive definite correlation matrix. cov
-# matrices have failed for. 
+# matrices have failed for.
 # load up a table of pvals we created
 from numpy import load, array, arange
 from numpy.random import seed
@@ -704,6 +792,3 @@ for table, name in zip(tables,names):
     o = open('/Users/will/Desktop/'+name, 'w')
     o.write(json_str)
     o.close()
-
-
-
