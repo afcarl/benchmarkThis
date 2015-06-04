@@ -10,8 +10,6 @@ Run the following command
 source env.sh
 ```
 
-From this:
-
 Table 1 3/8/13
 --------------
 *Ecological relation tables*
