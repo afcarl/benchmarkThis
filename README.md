@@ -3,6 +3,13 @@ A statistical benchmarking repository
 Other correlations work:
 https://github.com/wdwvt1/correlations
 
+Getting started
+---------------
+Run the following command
+```
+source env.sh
+```
+
 From this:
 
 Table 1 3/8/13
