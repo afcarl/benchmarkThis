@@ -3,7 +3,12 @@ A statistical benchmarking repository
 Other correlations work:
 https://github.com/wdwvt1/correlations
 
-From this:
+Getting started
+---------------
+Run the following command
+```
+source env.sh
+```
 
 Table 1 3/8/13
 --------------
