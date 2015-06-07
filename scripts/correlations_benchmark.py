@@ -72,6 +72,10 @@ def plot_roc(metric_df, plot_styles):
             DataFrame containing sensitivity,
             specificity and precision information
             for each of the evaluated methods
+        plot_styles : list, str
+            list of plotting styles for each method
+            i.e. 'r' for straight red lines or 'ob'
+            for blue points
     Returns
         plt.figure
     """
@@ -98,6 +102,10 @@ def plot_recall(metric_df, plot_styles):
             DataFrame containing sensitivity,
             specificity and precision information
             for each of the evaluated methods
+        plot_styles : list, str
+            list of plotting styles for each method
+            i.e. 'r' for straight red lines or 'ob'
+            for blue points
     Returns
         plt.figure
     """
