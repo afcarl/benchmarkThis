@@ -1,6 +1,7 @@
 # benchmarkThis
 A statistical benchmarking repository
-Other correlations work:
+
+This repository builds off of some of the functionality found in the following correlations benchmarking repository
 https://github.com/wdwvt1/correlations
 
 Getting started
