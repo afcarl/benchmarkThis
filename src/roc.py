@@ -6,6 +6,7 @@ Build ROC curves using the following
 Just to check the presence of an edge
 """
 import numpy as np
+import matplotlib.pyplot as plt
 
 
 def confusion_matrices(corr_mat, true_corr_mat, thresholds=None):
@@ -45,3 +46,55 @@ def confusion_matrices(corr_mat, true_corr_mat, thresholds=None):
     confusion_wrap = lambda x: confusion_matrix(corr_mat, true_corr_mat, x)
     TP, FP, TN, FN = zip(*map(confusion_wrap, thresholds))
     return TP, FP, TN, FN
+
+
+def plot_roc(metric_df, plot_styles):
+    """
+    Parameters
+    ----------
+        metric_df : pd.DataFrame
+            columns : method names
+            rows : sensitivity, specificity and precision
+
+            DataFrame containing sensitivity,
+            specificity and precision information
+            for each of the evaluated methods
+    Returns
+        plt.figure
+    """
+    roc_fig = plt.figure()
+    for i, method_name in enumerate(metric_df.columns):
+        spec = metric_df[method_name]['Specificity']
+        sens = metric_df[method_name]['Sensitivity']
+        plt.plot(1-spec, sens, plot_styles[i], label=method_name)
+    plt.legend(loc=4)
+    plt.title('ROC curve')
+    plt.xlabel('False Positive Rate')
+    plt.ylabel('True Positive Rate')
+    return roc_fig
+
+
+def plot_recall(metric_df, plot_styles):
+    """
+    Parameters
+    ----------
+        metric_df : pd.DataFrame
+            columns : method names
+            rows : sensitivity, specificity and precision
+
+            DataFrame containing sensitivity,
+            specificity and precision information
+            for each of the evaluated methods
+    Returns
+        plt.figure
+    """
+    recall_fig = plt.figure()
+    for i, method_name in enumerate(metric_df.columns):
+        sens = metric_df[method_name]['Sensitivity']
+        prec = metric_df[method_name]['Precision']
+        plt.plot(sens, prec, plot_styles[i], label=method_name)
+    plt.legend(loc=2)
+    plt.title('Precision/Recall curve')
+    plt.xlabel('Recall Rate')
+    plt.ylabel('Precision Rate')
+    return recall_fig

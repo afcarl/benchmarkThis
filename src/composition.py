@@ -99,6 +99,7 @@ array([ 0.25,  0.25,  0.5 ])
 from __future__ import absolute_import, division, print_function
 import numpy as np
 import scipy.stats as ss
+from skbio.diversity.alpha import lladser_pe
 
 
 def closure(mat):
@@ -190,6 +191,56 @@ def multiplicative_replacement(mat, delta=None):
 
     zcnts = 1 - tot * delta
     mat = np.where(z_mat, delta, zcnts * mat)
+    return mat.squeeze()
+
+
+def coverage_replacement(count_mat, uncovered_estimator=lladser_pe):
+    r"""Replace all zeros with small non-zero values
+    using a coverage estimator
+
+    It uses the multiplicative replacement strategy [1]_ ,
+    replacing zeros with a small positive :math:`\delta`
+    and ensuring that the compositions still add up to 1.
+    However, :math:`\delta` is determined using a coverage
+    estimator such that all of the non-zero values add up
+    to the coverage probability
+
+    Parameters
+    ----------
+    count_mat: array_like
+       a matrix of counts where
+       rows = samples and
+       columns = components
+    uncovered_estimator : function, optional
+       function to estimate the uncovered probability
+
+    Returns
+    -------
+    numpy.ndarray, np.float64
+       A matrix of proportions where all of the values
+       are nonzero and each composition (row) adds up to 1
+
+    """
+    mat = closure(count_mat)
+    z_mat = (mat == 0)
+
+    tot = z_mat.sum(axis=-1)
+
+    p_unobs = np.apply_along_axis(uncovered_estimator,
+                                  -1, count_mat)
+    delta = p_unobs / tot
+
+    p_obs = 1 - p_unobs
+    p_obs = np.repeat(p_obs[np.newaxis, :],
+                      mat.shape[-1], 0).T
+
+    delta = np.repeat(delta[np.newaxis, :],
+                      mat.shape[-1], 0).T
+
+    rounded_zeros = np.multiply(z_mat, delta)
+    non_zeros = np.multiply(mat, p_obs)
+
+    mat = rounded_zeros + non_zeros
     return mat.squeeze()
 
 

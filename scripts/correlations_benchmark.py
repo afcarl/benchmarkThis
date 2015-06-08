@@ -3,115 +3,16 @@ Benchmarks for correlations
 """
 from __future__ import division
 from scipy.stats import spearmanr
-from roc import confusion_matrices
+
 from table_factories.tableFactory_6315 import (getParams, init_data,
                                                build_contingency_table,
                                                build_correlation_matrix)
 from correlation import zhengr, get_corr_matrix
 import numpy as np
-import matplotlib.pyplot as plt
-from scipy.stats.distributions import lognorm
-from generators.ecological import *
+
 import biom
-import pandas as pd
-
-
-def evaluate(corr_mat, meas_corrs, method_names):
-    """
-    Determine sensitivity, specificity and precision
-    for each of the estimated correlation matrices
-    over a set of thresholds.  This information
-    is used to generate ROC curves and precision
-    recall curves
-
-    Parameters
-    ----------
-    corr_mat : np.array
-       true correlation matrix
-    meas_corrs : list, np.array
-       list of measured correlation matrices
-    method_names : list, str
-       list of strings for the methods
-
-    Returns
-    -------
-    metric_df : pd.DataFrame
-        DataFrame containing sensitivity,
-        specificity and precision information
-        for each of the evaluated methods
-    """
-
-    assert len(meas_corrs) == len(method_names), "Each matrix needs a name"
-
-    thresholds = np.linspace(0, 1, 100)
-    metric_df = pd.DataFrame()
-    for i in range(len(meas_corrs)):
-        corr = meas_corrs[i]
-        TP, FP, TN, FN = confusion_matrices(corr,
-                                            corr_mat,
-                                            thresholds=thresholds)
-        TP, FP, TN, FN = map(np.array, [TP, FP, TN, FN])
-
-        sens, spec, prec = TP/(TP+FN), TN/(FP+TN), TP/(TP+FP)
-
-        metric_df[method_names[i]] = pd.Series({'Sensitivity': sens,
-                                                'Specificity': spec,
-                                                'Precision': prec})
-
-    return metric_df
-
-
-def plot_roc(metric_df, plot_styles):
-    """
-    Parameters
-    ----------
-        metric_df : pd.DataFrame
-            columns : method names
-            rows : sensitivity, specificity and precision
-
-            DataFrame containing sensitivity,
-            specificity and precision information
-            for each of the evaluated methods
-    Returns
-        plt.figure
-    """
-    roc_fig = plt.figure()
-    for i, method_name in enumerate(metric_df.columns):
-        spec = metric_df[method_name]['Specificity']
-        sens = metric_df[method_name]['Sensitivity']
-        plt.plot(1-spec, sens, plot_styles[i], label=method_name)
-    plt.legend(loc=4)
-    plt.title('ROC curve')
-    plt.xlabel('False Positive Rate')
-    plt.ylabel('True Positive Rate')
-    return roc_fig
-
-
-def plot_recall(metric_df, plot_styles):
-    """
-    Parameters
-    ----------
-        metric_df : pd.DataFrame
-            columns : method names
-            rows : sensitivity, specificity and precision
-
-            DataFrame containing sensitivity,
-            specificity and precision information
-            for each of the evaluated methods
-    Returns
-        plt.figure
-    """
-    recall_fig = plt.figure()
-    for i, method_name in enumerate(metric_df.columns):
-        sens = metric_df[method_name]['Sensitivity']
-        prec = metric_df[method_name]['Precision']
-        plt.plot(sens, prec, plot_styles[i], label=method_name)
-    plt.legend(loc=2)
-    plt.title('Precision/Recall curve')
-    plt.xlabel('Recall Rate')
-    plt.ylabel('Precision Rate')
-    return recall_fig
-
+from roc import plot_roc, plot_recall
+from metrics import confusion_evaluate
 
 ###############################################
 #  Main code
@@ -135,7 +36,7 @@ open(txtname, 'w').write(bT.to_tsv())
 
 
 zheng = lambda x, y: abs(zhengr(x, y))
-
+res_folder = '../results/correlations/'
 #######################################################################
 #                  Absolute Ecological Relations                      #
 #######################################################################
@@ -147,16 +48,19 @@ zheng_corr_mat = get_corr_matrix(table, zheng)
 # 2. extract matrix via the pandas as_matrix() command
 # 3. take absolute value via pandas abs() command
 
-metric_df = evaluate(corr_mat, [pearson_corr_mat,
-                                spearman_corr_mat,
-                                zheng_corr_mat],
-                               ['Pearson', 'Spearman', 'Lovell'])
+metric_df = confusion_evaluate(corr_mat, [pearson_corr_mat,
+                                          spearman_corr_mat,
+                                          zheng_corr_mat],
+                                         ['Pearson',
+                                          'Spearman',
+                                          'Lovell'])
 
 roc_fig = plot_roc(metric_df, ['-ob', '-og', '-or'])
 prec_fig = plot_recall(metric_df, ['-ob', '-og', '-or'])
 
-roc_fig.savefig('../results/simple_nonzero_eco_roc_curve.png')
-prec_fig.savefig('../results/simple_nonzero_eco_pre_recall_curve.png')
+
+roc_fig.savefig('%s/simple_nonzero_eco_roc_curve.png' % res_folder)
+prec_fig.savefig('%s/simple_nonzero_eco_pre_recall_curve.png' % res_folder)
 
 #######################################################################
 #                        Uniform rarefaction                          #
@@ -170,16 +74,18 @@ pearson_corr_mat = abs(np.corrcoef(samp_table.T))
 spearman_corr_mat = abs(spearmanr(samp_table)[0])
 zheng_corr_mat = get_corr_matrix(samp_table, zheng)
 
-metric_df = evaluate(corr_mat, [pearson_corr_mat,
-                                spearman_corr_mat,
-                                zheng_corr_mat],
-                               ['Pearson', 'Spearman', 'Lovell'])
+metric_df = confusion_evaluate(corr_mat, [pearson_corr_mat,
+                                          spearman_corr_mat,
+                                          zheng_corr_mat],
+                                         ['Pearson',
+                                          'Spearman',
+                                          'Lovell'])
 
 roc_fig = plot_roc(metric_df, ['-ob', '-og', '-or'])
 prec_fig = plot_recall(metric_df, ['-ob', '-og', '-or'])
 
-roc_fig.savefig('../results/uniform_rare_eco_roc_curve.png')
-prec_fig.savefig('../results/uniform_rare_eco_pre_recall_curve.png')
+roc_fig.savefig('%s/uniform_rare_eco_roc_curve.png' % res_folder)
+prec_fig.savefig('%s/uniform_rare_eco_pre_recall_curve.png' % res_folder)
 
 bT = biom.Table(samp_table,
                 range(samp_table.shape[0]),
@@ -201,16 +107,18 @@ pearson_corr_mat = abs(np.corrcoef(samp_table.T))
 spearman_corr_mat = abs(spearmanr(samp_table)[0])
 zheng_corr_mat = get_corr_matrix(samp_table, zheng)
 
-metric_df = evaluate(corr_mat, [pearson_corr_mat,
-                                spearman_corr_mat,
-                                zheng_corr_mat],
-                               ['Pearson', 'Spearman', 'Lovell'])
+metric_df = confusion_evaluate(corr_mat, [pearson_corr_mat,
+                                          spearman_corr_mat,
+                                          zheng_corr_mat],
+                                         ['Pearson',
+                                          'Spearman',
+                                          'Lovell'])
 
 roc_fig = plot_roc(metric_df, ['-ob', '-og', '-or'])
 prec_fig = plot_recall(metric_df, ['-ob', '-og', '-or'])
 
-roc_fig.savefig('../results/random_rare_eco_roc_curve.png')
-prec_fig.savefig('../results/random_rare_eco_pre_recall_curve.png')
+roc_fig.savefig('%s/random_rare_eco_roc_curve.png' % res_folder)
+prec_fig.savefig('%s/random_rare_eco_pre_recall_curve.png' % res_folder)
 
 bT = biom.Table(samp_table,
                 range(samp_table.shape[0]),
