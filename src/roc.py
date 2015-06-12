@@ -48,7 +48,7 @@ def confusion_matrices(corr_mat, true_corr_mat, thresholds=None):
     return TP, FP, TN, FN
 
 
-def plot_roc(metric_df, plot_styles):
+def plot_roc(metric_df, plot_styles, loc=4):
     """
     Parameters
     ----------
@@ -67,14 +67,15 @@ def plot_roc(metric_df, plot_styles):
         spec = metric_df[method_name]['Specificity']
         sens = metric_df[method_name]['Sensitivity']
         plt.plot(1-spec, sens, plot_styles[i], label=method_name)
-    plt.legend(loc=4)
+    if loc is not None:
+        plt.legend(loc=loc)
     plt.title('ROC curve')
     plt.xlabel('False Positive Rate')
     plt.ylabel('True Positive Rate')
     return roc_fig
 
 
-def plot_recall(metric_df, plot_styles):
+def plot_recall(metric_df, plot_styles, loc=2):
     """
     Parameters
     ----------
@@ -93,7 +94,8 @@ def plot_recall(metric_df, plot_styles):
         sens = metric_df[method_name]['Sensitivity']
         prec = metric_df[method_name]['Precision']
         plt.plot(sens, prec, plot_styles[i], label=method_name)
-    plt.legend(loc=2)
+    if loc is not None:
+        plt.legend(loc=loc)
     plt.title('Precision/Recall curve')
     plt.xlabel('Recall Rate')
     plt.ylabel('Precision Rate')

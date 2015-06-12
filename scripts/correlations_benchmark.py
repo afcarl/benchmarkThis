@@ -98,6 +98,11 @@ open(txtname, 'w').write(bT.to_tsv())
 #######################################################################
 #                        Random rarefaction                           #
 #######################################################################
+font = {'family': 'normal',
+        'weight': 'normal',
+        'size': 16}
+matplotlib.rc('font', **font)
+
 samp_table = np.apply_along_axis(
     lambda p: np.random.multinomial(n=np.random.geometric(1/2000)+2000,
                                     pvals=p),

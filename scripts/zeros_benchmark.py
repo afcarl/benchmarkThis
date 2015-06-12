@@ -12,6 +12,8 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 
+from scipy.stats import spearmanr
+import matplotlib
 import biom
 from roc import plot_roc, plot_recall
 from metrics import confusion_evaluate, mean_sq_distance
@@ -56,20 +58,22 @@ lrsamp_table = coverage_replacement(samp_table)
 rrsamp_table = coverage_replacement(samp_table,
                                     uncovered_estimator=robbins)
 
+pearson_corr_mat = abs(np.corrcoef(samp_table.T))
+spearman_corr_mat = abs(spearmanr(samp_table)[0])
 zheng_corr_mat = get_corr_matrix(samp_table, zheng)
-mrzheng_corr_mat = get_corr_matrix(mrsamp_table, zheng)
-lrzheng_corr_mat = get_corr_matrix(lrsamp_table, zheng)
 rrzheng_corr_mat = get_corr_matrix(rrsamp_table, zheng)
 
-metric_df = confusion_evaluate(corr_mat, [zheng_corr_mat,
-                                          mrzheng_corr_mat,
+metric_df = confusion_evaluate(corr_mat, [pearson_corr_mat,
+                                          spearman_corr_mat,
+                                          zheng_corr_mat,
                                           rrzheng_corr_mat],
-                                         ['Lovell',
-                                          'Mult Lovell',
-                                          'Robbins Lovell'])
+                                         ['Pearson',
+                                          'Spearman',
+                                          'Lovell',
+                                          'Robbins Corrected Lovell'])
 
-roc_fig = plot_roc(metric_df, ['-ob', '-og', '-or'])
-prec_fig = plot_recall(metric_df, ['-ob', '-og', '-or'])
+roc_fig = plot_roc(metric_df, ['-ob', '-og', '-or', '-om'])
+prec_fig = plot_recall(metric_df, ['-ob', '-og', '-or', '-om'])
 
 roc_fig.savefig('../results/zeros/uniform_rare_eco_roc_curve.png')
 prec_fig.savefig('../results/zeros/uniform_rare_eco_pre_recall_curve.png')
@@ -77,6 +81,12 @@ prec_fig.savefig('../results/zeros/uniform_rare_eco_pre_recall_curve.png')
 #######################################################################
 #                   Random rarefaction correlation                    #
 #######################################################################
+font = {'family': 'normal',
+        'weight': 'normal',
+        'size': 13}
+
+matplotlib.rc('font', **font)
+
 samp_table = np.apply_along_axis(
     lambda p: np.random.multinomial(n=np.random.geometric(1/2000)+2000,
                                     pvals=p),
@@ -87,20 +97,22 @@ lrsamp_table = coverage_replacement(samp_table)
 rrsamp_table = coverage_replacement(samp_table,
                                     uncovered_estimator=robbins)
 
+pearson_corr_mat = abs(np.corrcoef(samp_table.T))
+spearman_corr_mat = abs(spearmanr(samp_table)[0])
 zheng_corr_mat = get_corr_matrix(samp_table, zheng)
-mrzheng_corr_mat = get_corr_matrix(mrsamp_table, zheng)
-lrzheng_corr_mat = get_corr_matrix(lrsamp_table, zheng)
 rrzheng_corr_mat = get_corr_matrix(rrsamp_table, zheng)
 
-metric_df = confusion_evaluate(corr_mat, [zheng_corr_mat,
-                                          mrzheng_corr_mat,
+metric_df = confusion_evaluate(corr_mat, [pearson_corr_mat,
+                                          spearman_corr_mat,
+                                          zheng_corr_mat,
                                           rrzheng_corr_mat],
-                                         ['Lovell',
-                                          'Mult Lovell',
-                                          'Robbins Lovell'])
+                                         ['Pearson',
+                                          'Spearman',
+                                          'Lovell',
+                                          'Robbins Corrected Lovell'])
 
-roc_fig = plot_roc(metric_df, ['-ob', '-og', '-or'])
-prec_fig = plot_recall(metric_df, ['-ob', '-og', '-or'])
+roc_fig = plot_roc(metric_df, ['-ob', '-og', '-or', '-om'])
+prec_fig = plot_recall(metric_df, ['-ob', '-og', '-or', '-om'], loc=None)
 
 roc_fig.savefig('../results/zeros/random_rare_eco_roc_curve.png')
 prec_fig.savefig('../results/zeros/random_rare_eco_pre_recall_curve.png')
@@ -131,12 +143,12 @@ for depth in range(1000, 10000, 1000):
     robbins_mean.append(np.mean(rr_msd))
 
 depths = range(1000, 10000, 1000)
-plt.plot(depths, mult_mean,
-         '-ob', label='Multiplicative')
-plt.plot(depths, robbins_mean,
-         '-or', label='Robbins')
+plt.semilogy(depths, mult_mean,
+             '-ob', label='Multiplicative')
+plt.semilogy(depths, robbins_mean,
+             '-or', label='Robbins')
 plt.legend()
 plt.title('Distortion on Zero replacement')
-plt.xlabel('Rarefaction depth')
+plt.xlabel('Sequencing depth')
 plt.ylabel('Mean Squared Aitchison Distance')
 fig.savefig('../results/zeros/distortion_vs_depth.png')
