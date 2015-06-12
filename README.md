@@ -17,6 +17,7 @@ pip install matplotlib
 pip install scipy
 pip install pandas
 pip install scikit-bio
+pip install biom-format
 pip install cogent
 ```
 
