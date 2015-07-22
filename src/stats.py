@@ -51,6 +51,29 @@ def mvn_ellipsoid(mu, sigma, alpha):
     return eigvals, eigvecs, half_widths
 
 
+def coverage_correction(count_vec, uncovered_estimator):
+    """
+    Corrects for coverage and estimates absolute proportions
+
+    Parameters
+    ----------
+    count_vec : np.array
+       Count vector
+    uncovered_estimator : function
+       Discovery estimator (aka unobserved probability estimator)
+
+    Returns
+    -------
+    np.array
+       Corrected proportions
+    """
+    rel_p = closure(count_vec)
+    p_unobs = np.apply_along_axis(uncovered_estimator,
+                                  -1, count_vec)
+    p = rel_p * np.atleast_2d(1 - p_unobs).T
+    return np.squeeze(p)
+
+
 def multinomial_bootstrap_ci(count_vec, uncovered_estimator,
                              alpha=0.05, bootstraps=1000,
                              random_state=0):
