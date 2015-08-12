@@ -4,7 +4,7 @@ Implements Lovell's correlation metric
 """
 from __future__ import division
 import numpy as np
-from skbio.stats.composition import clr
+from composition import clr
 
 
 def lovellr(x, y):

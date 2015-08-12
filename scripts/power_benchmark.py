@@ -4,18 +4,18 @@ Tests power analysis on UniFrac
 from __future__ import division
 
 import numpy as np
-import pandas as pd
 import matplotlib
 import matplotlib.pyplot as plt
 from composition import closure
-from metrics import variation_distance, effect_size
+from metrics import effect_size
 from skbio.stats import subsample_counts
 from skbio.diversity.alpha import robbins
 from composition import coverage_replacement
 from ancom import ancom
 import scipy.stats as sps
-import biom
 import os
+from generators.diff_otu import diff_multiple_otu
+
 ########################################################
 # Single OTU differential benchmark
 #
@@ -25,7 +25,7 @@ import os
 ########################################################
 font = {'family': 'normal',
         'weight': 'normal',
-        'size': 13}
+        'size': 16}
 
 matplotlib.rc('font', **font)
 
@@ -34,7 +34,7 @@ np.random.seed(0)
 C = 200
 num_samps = 1000
 num_species = 100
-alpha = 0.05
+alpha = 0.05/num_species
 beta = 0.8
 diffs = np.linspace(0, .25, 25)
 
@@ -46,16 +46,15 @@ cov_fdr = np.zeros((len(diffs)))  # False positive rate
 cov_fnr = np.zeros((len(diffs)))  # False negative rate
 effect_sizes = np.zeros((len(diffs)))  # Effect size
 
-# def ancom_func(x, y):
-#     n = len(x) + len(y)
-#     return ancom(np.vstack((x, y)),
-#                  np.arange(n) % 2)
+metric_dict = {'Mann_Whitney': (sps.mannwhitneyu, '-ob'),
+               't_test': (sps.ttest_ind, '-og'),
+               'ancom': (ancom, '-or')}
 
-metric_dict = {'Mann_Whitney': sps.mannwhitneyu,
-               't_test': sps.ttest_ind,
-               'ancom': ancom}
-fig = plt.figure()
-for metric, metric_func in metric_dict.items():
+fig1, ax1 = plt.subplots()
+fig2, ax2 = plt.subplots()
+
+for metric, metric_utils in metric_dict.items():
+    metric_func, metric_color = metric_utils
     np.random.seed(0)
     # Sample OTU table plus a metadata vector for before/after spiking OTU1
     samp_table = np.zeros((num_samps, num_species), dtype=np.int64)
@@ -84,7 +83,6 @@ for metric, metric_func in metric_dict.items():
 
         if metric != 'ancom':
             fun = lambda x: metric_func(x[cats == 0], x[cats == 1])
-            _, rel_pvals = np.apply_along_axis(fun, 0, closure(samp_table))
             _, cov_pvals = np.apply_along_axis(fun, 0, cov_table)
         else:
             _, cov_pvals = metric_func(cov_table, cats)
@@ -94,72 +92,174 @@ for metric, metric_func in metric_dict.items():
                                       sig_species[:, 0])
 
         # Calculate fdr and power
-        rel_detect = rel_pvals <= alpha
-        rel_miss = rel_pvals > alpha
         cov_detect = cov_pvals <= alpha
         cov_miss = cov_pvals > alpha
-        rel_fdr[j] = (rel_detect[1:]).sum() / (rel_detect).sum()
-        rel_fnr[j] = (rel_miss[0]).sum() / (rel_miss).sum()
         cov_fdr[j] = (cov_detect[1:]).sum() / (cov_detect).sum()
         cov_fnr[j] = (cov_miss[0]).sum() / (cov_miss).sum()
 
-    plt.plot(np.ravel(effect_sizes),
-             np.ravel(cov_fdr), label=metric)
-    # Plot fdr vs effect size
-    # fig = plt.figure()
-    # if metric != 'ancom':
-    #     plt.plot(np.ravel(effect_sizes),
-    #              np.ravel(rel_fdr),
-    #              '-g',
-    #              label='Relative proportions')
-    # plt.plot(np.ravel(effect_sizes),
-    #          np.ravel(cov_fdr),
-    #          '-r',
-    #          label='Corrected proportions')
-    # plt.legend(loc=4)
-    # plt.xlabel('Effect Size')
-    # plt.ylabel('False Discovery Rate')
-    # res_dir = '../results/power'
-    # metric_dir = '%s/%s' % (res_dir, metric)
-    # if not os.path.exists(metric_dir):
-    #     os.mkdir(metric_dir)
-    # fname = '%s/fdr.png' % (metric_dir)
-    # fig.savefig(fname)
+    ax1.plot(np.ravel(effect_sizes),
+             np.ravel(cov_fdr),
+             metric_color,
+             label=metric)
 
-    # # Plot fnr vs effect size
-    # fig = plt.figure()
-    # if metric != 'ancom':
-    #     plt.plot(effect_sizes,
-    #              rel_fnr,
-    #              '-g',
-    #              label='Relative proportions')
-    # plt.plot(effect_sizes,
-    #          cov_fnr,
-    #          '-r',
-    #          label='Corrected proportions')
-    # plt.legend(loc=4)
-    # plt.xlabel('Effect Size')
-    # plt.ylabel('False Negative Rate')
-    # res_dir = '../results/power'
-    # metric_dir = '%s/%s' % (res_dir, metric)
-    # if not os.path.exists(metric_dir):
-    #     os.mkdir(metric_dir)
-    # fname = '%s/fnr.png' % (metric_dir)
-    # fig.savefig(fname)
+    ax2.plot(np.ravel(effect_sizes),
+             np.ravel(cov_fnr),
+             metric_color,
+             label=metric)
 
 res_dir = '../results/power'
 fname = '%s/fdr_all.png' % (res_dir)
-plt.legend(loc=4)
-plt.xlabel('Effect Size')
-plt.ylabel('False Discovery Rate')
+ax1.legend(loc=4)
+ax1.set_title('Type I Error')
+ax1.set_xlabel('Effect Size')
+ax1.set_ylabel('False Discovery Rate')
+fig1.savefig(fname)
 
-fig.savefig(fname)
-# Alpha (fdr) versus percent rarefaction
+res_dir = '../results/power'
+fname = '%s/fnr_all.png' % (res_dir)
+ax2.legend(loc=4)
+ax2.set_title('Type II Error')
+ax2.set_xlabel('Effect Size')
+ax2.set_ylabel('False Negative Rate')
+fig2.savefig(fname)
 
+# Example plots
+fname = '%s/proportion_bar.png' % (res_dir)
+N = 10
+ind = np.arange(N)  # the x locations for the groups
+width = 0.4         # the width of the bars
+fig3, ax3 = plt.subplots(3)
+x = np.array([15] + [10]*(N-1))
+y = np.array([30] + [10]*(N-1))
+ax3[0].bar(ind, x, width, color='r')
+ax3[0].bar(ind+width, y, width, color='b')
+ax3[0].set_xticks([])
+ax3[0].set_title('Species 1 doubles')
+ax3[0].set_ylabel('Abundances')
+
+x = np.array([15] + [10]*(N-1))
+y = np.array([15] + [5]*(N-1))
+ax3[1].bar(ind, x, width, color='r')
+ax3[1].bar(ind+width, y, width, color='b')
+ax3[1].set_xticks([])
+ax3[1].set_title('Every species halves, except species 1')
+ax3[1].set_ylabel('Abundances')
+
+x = closure(np.array([15] + [10]*(N-1)))
+y = closure(np.array([15] + [5]*(N-1)))
+ax3[2].bar(ind, x, width, color='r')
+ax3[2].bar(ind+width, y, width, color='b')
+ax3[2].set_title('Proportions for both scenarios')
+ax3[2].set_ylabel('Proportions')
+ax3[2].set_xlabel('Species')
+plt.xticks(ind+width, map(str, range(1, 11)))
+fig3.savefig(fname)
+
+########################################################
+# Proportion of Differientially Abundant OTUs
+#
 # Alpha (fdr) versus proportion of differientially abundant OTUs
 # (i.e. OTU1 = 2 * OTU2)
-
-# Beta (power) versus percent rarefaction
-
+#
 # Beta (power) versus proportion of differientially abundant OTUs
 # (i.e. OTU1 = 2 * OTU2)
+########################################################
+
+font = {'family': 'normal',
+        'weight': 'normal',
+        'size': 16}
+
+matplotlib.rc('font', **font)
+
+np.random.seed(0)
+
+num_samps = 1000
+num_species = 100
+alpha = 0.05/num_species
+beta = 0.8
+diffs = np.arange(1, 25)
+depth = 200
+# Relative proportions
+one_fdr = np.zeros((len(diffs)))       # False positive rate
+one_fnr = np.zeros((len(diffs)))       # False negative rate
+# Coverage corrected proportions
+cov_fdr = np.zeros((len(diffs)))       # False positive rate
+cov_fnr = np.zeros((len(diffs)))       # False negative rate
+cats = np.ones(num_samps)
+cats[num_samps//2:] = 0
+
+metric_dict = {
+    'Mann_Whitney': (sps.mannwhitneyu, 'ob'),
+    't_test': (sps.ttest_ind, 'og'),
+    'ancom': (ancom, 'or')}
+
+fig1, ax1 = plt.subplots()
+fig2, ax2 = plt.subplots()
+
+for metric, metric_utils in metric_dict.items():
+    metric_func, metric_color = metric_utils
+    for j, diff in enumerate(diffs):
+        # Using same parameters from ANCOM
+        samp_table = diff_multiple_otu(num_species, diff,
+                                       num_samps, depth, 2,
+                                       high_low=False)
+        one_table = samp_table + 1
+        cov_table = coverage_replacement(samp_table,
+                                         uncovered_estimator=robbins)
+
+        if metric != 'ancom':
+            fun = lambda x: metric_func(x[cats == 0], x[cats == 1])
+            _, cov_pvals = np.apply_along_axis(fun, 0, cov_table)
+            _, one_pvals = np.apply_along_axis(fun, 0, one_table)
+        else:
+            _, cov_pvals = metric_func(cov_table, cats)
+            _, one_pvals = metric_func(one_table, cats)
+
+        cov_detect = cov_pvals <= alpha
+        cov_miss = cov_pvals > alpha
+        cov_fdr[j] = (cov_detect[diff:]).sum() / (cov_detect).sum()
+        cov_fnr[j] = (cov_miss[:diff]).sum() / (cov_miss).sum()
+
+        one_detect = one_pvals <= alpha
+        one_miss = one_pvals > alpha
+        one_fdr[j] = (one_detect[diff:]).sum() / (one_detect).sum()
+        one_fnr[j] = (one_miss[:diff]).sum() / (one_miss).sum()
+
+    if metric == 'ancom':
+        ax1.plot(diffs/num_species,
+                 np.ravel(one_fdr),
+                 ':'+metric_color)
+    ax1.plot(diffs/num_species,
+             np.ravel(cov_fdr),
+             '-'+metric_color,
+             label=metric)
+    if metric == 'ancom':
+        ax2.plot(diffs/num_species,
+                 np.ravel(one_fnr),
+                 ':'+metric_color)
+    ax2.plot(diffs/num_species,
+             np.ravel(cov_fnr),
+             '-'+metric_color,
+             label=metric)
+res_dir = '../results/power'
+fname = '%s/fdr_proportion_diff.png' % (res_dir)
+# ax1.legend(loc=4)
+ax1.set_title('Type I Error')
+ax1.set_xlabel('Proportion of Differiential Taxa')
+ax1.set_ylabel('False Discovery Rate')
+fig1.savefig(fname)
+
+res_dir = '../results/power'
+fname = '%s/fnr_proportion_diff.png' % (res_dir)
+# ax2.legend(loc=2)
+ax2.set_title('Type II Error')
+ax2.set_xlabel('Proportion of Differiential Taxa')
+ax2.set_ylabel('False Negative Rate')
+fig2.savefig(fname)
+
+########################################################
+# Percent Rarefaction
+#
+# Alpha (fdr) versus percent rarefaction
+# Beta (power) versus percent rarefaction
+########################################################

@@ -7,13 +7,13 @@ from scipy.stats import spearmanr
 from table_factories.tableFactory_6315 import (getParams, init_data,
                                                build_contingency_table,
                                                build_correlation_matrix)
-from correlation import zhengr, get_corr_matrix
+from correlation import zhengr, lovellr, get_corr_matrix
 import numpy as np
 
 import biom
 from roc import plot_roc, plot_recall
 from metrics import confusion_evaluate
-
+import matplotlib
 ###############################################
 #  Main code
 ###############################################
@@ -67,12 +67,12 @@ prec_fig.savefig('%s/simple_nonzero_eco_pre_recall_curve.png' % res_folder)
 #######################################################################
 pvals = np.apply_along_axis(lambda x: x / x.sum(), axis=1, arr=table)
 samp_table = np.apply_along_axis(
-    lambda p: np.random.multinomial(n=2000, pvals=p),
+    lambda p: np.random.multinomial(n=10**9, pvals=p),
     axis=1, arr=pvals)
 
 pearson_corr_mat = abs(np.corrcoef(samp_table.T))
 spearman_corr_mat = abs(spearmanr(samp_table)[0])
-zheng_corr_mat = get_corr_matrix(samp_table, zheng)
+zheng_corr_mat = get_corr_matrix(samp_table, zhengr)
 
 metric_df = confusion_evaluate(corr_mat, [pearson_corr_mat,
                                           spearman_corr_mat,
@@ -101,6 +101,7 @@ open(txtname, 'w').write(bT.to_tsv())
 font = {'family': 'normal',
         'weight': 'normal',
         'size': 16}
+
 matplotlib.rc('font', **font)
 
 samp_table = np.apply_along_axis(
@@ -118,7 +119,6 @@ metric_df = confusion_evaluate(corr_mat, [pearson_corr_mat,
                                          ['Pearson',
                                           'Spearman',
                                           'Lovell'])
-
 roc_fig = plot_roc(metric_df, ['-ob', '-og', '-or'])
 prec_fig = plot_recall(metric_df, ['-ob', '-og', '-or'])
 
@@ -132,3 +132,13 @@ biomname = '../data/tables_6_3_2015/bioms/table_3.biom'
 txtname = '../data/tables_6_3_2015/txts/table_3.txt'
 open(biomname, 'w').write(bT.to_json('Jamie'))
 open(txtname, 'w').write(bT.to_tsv())
+
+#######################################################################
+#                Negative correlations benchmark                      #
+#                                                                     #
+# a) Tests only negative correlations                                 #
+# b) Tests one negative correlation with other growing neutral factors#
+#                                                                     #
+# Big question: how dense does sampling need to be in order to be     #
+#  sufficient to determine a correlation network?                     #
+#######################################################################

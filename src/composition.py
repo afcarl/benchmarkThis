@@ -226,7 +226,14 @@ def coverage_replacement(count_mat, uncovered_estimator=lladser_pe):
 
     tot = z_mat.sum(axis=-1)
 
-    p_unobs = np.apply_along_axis(uncovered_estimator,
+    def func(x):
+        up = uncovered_estimator(x)
+        if up > 1:
+            return 1 - 1 / sum(x)
+        else:
+            return up
+
+    p_unobs = np.apply_along_axis(func,
                                   -1, count_mat)
     delta = p_unobs / tot
 

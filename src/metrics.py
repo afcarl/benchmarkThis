@@ -236,6 +236,7 @@ def match_pre_post(dist_mat, num_samps):
     post = map(lambda x: "Post.%d" % x, range(num_samps))
     return np.array([dist_mat.loc[pre[i], post[i]] for i in range(num_samps)])
 
+
 def effect_size(x,y):
     """
     Calculates the effect size between vectors x and y
