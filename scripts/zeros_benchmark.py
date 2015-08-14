@@ -120,35 +120,122 @@ prec_fig.savefig('../results/zeros/random_rare_eco_pre_recall_curve.png')
 #######################################################################
 #                   Distortion vs Rarefaction depth                   #
 #######################################################################
+
 np.random.seed(0)
-pvals = closure(np.random.geometric(1/10000, size=10000))
-fig = plt.figure()
-mult_mean = []
-robbins_mean = []
+plt.rc('legend', **{'fontsize': 12})
 
-for depth in range(1000, 10000, 1000):
 
-    samp_table = np.array([np.random.multinomial(n=depth, pvals=pvals)
-                           for i in range(1000)])
+num_species = 10000
+num_samps = 100
+pdf_dict = {
+    'Geometric': np.random.geometric(1/num_species, size=num_species),
+    'Uniform': np.random.uniform(5000, 15000, size=num_species)
+}
 
-    mrsamp_table = multiplicative_replacement(samp_table)
-    rrsamp_table = coverage_replacement(samp_table,
-                                        uncovered_estimator=robbins)
+depths = np.linspace(2000, 20000, 10)
+disp_depths = np.linspace(2000, 20000, 4)
+u, v = 0, 0
+fig, axes = plt.subplots(2, 2, sharey=True)
+for pdf, pval in pdf_dict.items():
+    mult_mean = []
+    robbins_mean = []
+    pvals = closure(pval)
 
-    # Get both mean distortion and variance
-    truth = np.tile(pvals, (1000, 1))
-    mr_msd = mean_sq_distance(mrsamp_table, truth)
-    rr_msd = mean_sq_distance(rrsamp_table, truth)
-    mult_mean.append(np.mean(mr_msd))
-    robbins_mean.append(np.mean(rr_msd))
+    for depth in depths:
 
-depths = range(1000, 10000, 1000)
-plt.semilogy(depths, mult_mean,
-             '-ob', label='Multiplicative')
-plt.semilogy(depths, robbins_mean,
-             '-or', label='Robbins')
-plt.legend()
-plt.title('Distortion on Zero replacement')
-plt.xlabel('Sequencing depth')
-plt.ylabel('Mean Squared Aitchison Distance')
-fig.savefig('../results/zeros/distortion_vs_depth.png')
+        samp_table = np.array([np.random.multinomial(n=depth, pvals=pvals)
+                               for i in range(num_samps)])
+
+        mrsamp_table = multiplicative_replacement(samp_table, delta=10**-8)
+        rrsamp_table = coverage_replacement(samp_table,
+                                            uncovered_estimator=robbins)
+
+        # Get both mean distortion and variance
+        truth = np.tile(pvals, (num_samps, 1))
+        mr_msd = mean_sq_distance(mrsamp_table, truth)
+        rr_msd = mean_sq_distance(rrsamp_table, truth)
+        mult_mean.append(np.mean(mr_msd))
+        robbins_mean.append(np.mean(rr_msd))
+
+    axes[u][v].semilogy(depths, mult_mean,
+                        '-ob', label='Multiplicative')
+    axes[u][v].semilogy(depths, robbins_mean,
+                        '-or', label='Robbins')
+    if u == 0:
+        axes[u][v].set_xticks(disp_depths)
+        axes[u][v].set_xticklabels([])
+        axes[u][v].legend(loc=3)
+    if u == 1:
+        axes[u][v].set_xlabel('Sequencing depth')
+        axes[u][v].set_xticks(disp_depths)
+        axes[u][v].set_xticklabels(disp_depths)
+
+    # axes[u].set_title('%s distribution' % pdf, fontsize=14)
+    # axes[u].set_ylabel('Mean Squared Aitchison Distance')
+    axes[u][v].get_xaxis().get_major_formatter().labelOnlyBase = False
+    u += 1
+
+# fig.suptitle('Distortion on Zero replacement', fontsize=18)
+fig.text(0.005, 0.5, 'Mean Squared Aitchison Distance',
+         va='center', rotation='vertical')
+# fig.tight_layout(rect=[0, 0.03, 1, 0.95])
+# fig.savefig('../results/zeros/distortion_vs_depth.png')
+
+
+#######################################################################
+#                     Distortion vs Delta                             #
+#######################################################################
+
+np.random.seed(0)
+# plt.rc('legend', **{'fontsize': 12})
+
+num_species = 10000
+num_samps = 100
+pdf_dict = {
+    'Geometric': np.random.geometric(1/num_species, size=num_species),
+    'Uniform': np.random.uniform(5000, 15000, size=num_species)
+}
+u, v = 0, 1
+logdeltas = np.linspace(-12, -4, 10)
+deltas = 10 ** logdeltas
+# fig, axes = plt.subplots(2, sharey=True)
+depth = 20000
+for pdf, pval in pdf_dict.items():
+    mult_mean = []
+    robbins_mean = []
+    pvals = closure(pval)
+
+    for delta in deltas:
+
+        samp_table = np.array([np.random.multinomial(n=depth, pvals=pvals)
+                               for i in range(num_samps)])
+
+        mrsamp_table = multiplicative_replacement(samp_table, delta=delta)
+        rrsamp_table = coverage_replacement(samp_table,
+                                            uncovered_estimator=robbins)
+
+        # Get both mean distortion and variance
+        truth = np.tile(pvals, (num_samps, 1))
+        mr_msd = mean_sq_distance(mrsamp_table, truth)
+        rr_msd = mean_sq_distance(rrsamp_table, truth)
+        mult_mean.append(np.mean(mr_msd))
+        robbins_mean.append(np.mean(rr_msd))
+
+    axes[u][v].loglog(deltas, mult_mean,
+                      '-ob', label='Multiplicative')
+    axes[u][v].loglog(deltas, robbins_mean,
+                      '-or', label='Robbins')
+    if u == 0:
+        axes[u][v].set_xticklabels([])
+    if u == 1:
+        axes[u][v].set_xlabel(r'$\displaystyle\delta$')
+    # axes[u][v].set_title('%s distribution' % pdf, fontsize=14)
+    axes[u][v].get_xaxis().get_major_formatter().labelOnlyBase = False
+    axR = axes[u][v].twinx()
+    axR.set_yticks([])
+    axR.set_ylabel('%s distribution' % pdf, fontsize=14)
+    u += 1
+
+fig.suptitle('Distortion on Zero replacement', fontsize=18)
+fig.tight_layout(rect=[0, 0.03, 1, 0.95])
+fig.savefig('../results/zeros/distortion.png')
