@@ -128,32 +128,57 @@ fname = '%s/proportion_bar.png' % (res_dir)
 N = 10
 ind = np.arange(N)  # the x locations for the groups
 width = 0.4         # the width of the bars
-fig3, ax3 = plt.subplots(3)
-x = np.array([15] + [10]*(N-1))
-y = np.array([30] + [10]*(N-1))
-ax3[0].bar(ind, x, width, color='r')
-ax3[0].bar(ind+width, y, width, color='b')
+fig3, ax3 = plt.subplots(2)
+x = np.array([10] + [10]*(N-1))
+y = np.array([20] + [10]*(N-1))
+ax3[0].bar(ind, x, width, color='r', label='Time point 1')
+ax3[0].bar(ind+width, y, width, color='b', label='Time point 2')
 ax3[0].set_xticks([])
 ax3[0].set_title('Species 1 doubles')
 ax3[0].set_ylabel('Abundances')
+ax3[0].legend()
+# x = np.array([15] + [10]*(N-1))
+# y = np.array([15] + [5]*(N-1))
+# ax3[1].bar(ind, x, width, color='r')
+# ax3[1].bar(ind+width, y, width, color='b')
+# ax3[1].set_xticks([])
+# ax3[1].set_title('Every species halves, except species 1')
+# ax3[1].set_ylabel('Abundances')
 
-x = np.array([15] + [10]*(N-1))
-y = np.array([15] + [5]*(N-1))
+x = closure(np.array([10] + [10]*(N-1)))
+y = closure(np.array([20] + [10]*(N-1)))
 ax3[1].bar(ind, x, width, color='r')
 ax3[1].bar(ind+width, y, width, color='b')
-ax3[1].set_xticks([])
-ax3[1].set_title('Every species halves, except species 1')
-ax3[1].set_ylabel('Abundances')
-
-x = closure(np.array([15] + [10]*(N-1)))
-y = closure(np.array([15] + [5]*(N-1)))
-ax3[2].bar(ind, x, width, color='r')
-ax3[2].bar(ind+width, y, width, color='b')
-ax3[2].set_title('Proportions for both scenarios')
-ax3[2].set_ylabel('Proportions')
-ax3[2].set_xlabel('Species')
+ax3[1].set_title('Proportions for both scenarios')
+ax3[1].set_ylabel('Proportions')
+ax3[1].set_xlabel('Species')
 plt.xticks(ind+width, map(str, range(1, 11)))
 fig3.savefig(fname)
+
+
+# Logratio difference plot
+fname = '%s/logratio_diff.png' % (res_dir)
+N = 10
+ind = np.arange(N)  # the x locations for the groups
+width = 0.4         # the width of the bars
+fig, ax = plt.subplots()
+x = np.array([10] + [10]*(N-1))
+y = np.array([20] + [10]*(N-1))
+lr_diff = np.zeros((10, 10))
+for i in range(len(x)):
+    for j in range(len(y)):
+        lr_diff[i, j] = np.log(x[i]/x[j]) - np.log(y[i]/y[j])
+
+im = ax.pcolor(lr_diff, cmap=plt.cm.Blues, edgecolor='black')
+
+labels = np.arange(1, 11)
+fig.colorbar(im)
+for axis in [ax.xaxis, ax.yaxis]:
+    axis.set(ticks=np.arange(0.5, len(labels)), ticklabels=labels)
+ax.invert_yaxis()
+ax.xaxis.tick_top()
+
+fig.savefig(fname)
 
 ########################################################
 # Proportion of Differientially Abundant OTUs

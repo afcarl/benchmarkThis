@@ -36,11 +36,27 @@ def confusion_matrices(corr_mat, true_corr_mat, thresholds=None):
         thresholds = np.linspace(0, 1, 20)
 
     def confusion_matrix(mat, exp_mat, threshold):
-        _mat = mat > threshold
-        _TP = np.triu(np.logical_and(_mat == 1, exp_mat == 1)).sum()
-        _FP = np.triu(np.logical_and(_mat == 1, exp_mat == 0)).sum()
-        _TN = np.triu(np.logical_and(_mat == 0, exp_mat == 0)).sum()
-        _FN = np.triu(np.logical_and(_mat == 0, exp_mat == 1)).sum()
+        p_mat = mat > threshold
+        n_mat = mat < -threshold
+        _TP = np.triu(np.logical_or(
+            np.logical_and(p_mat == 1, exp_mat == 1),
+            np.logical_and(n_mat == 1, exp_mat == -1))
+            ).sum()
+
+        _FP = np.triu(np.logical_or(
+            np.logical_and(p_mat == 1, exp_mat == 0),
+            np.logical_and(n_mat == 1, exp_mat == 0))
+            ).sum()
+
+        _TN = np.triu(np.logical_and(
+            np.logical_and(p_mat == 0, exp_mat == 0),
+            np.logical_and(n_mat == 0, exp_mat == 0))
+            ).sum()
+
+        _FN = np.triu(np.logical_or(
+            np.logical_and(p_mat == 0, exp_mat == 1),
+            np.logical_and(n_mat == 0, exp_mat == -1))
+            ).sum()
         return _TP, _FP, _TN, _FN
 
     confusion_wrap = lambda x: confusion_matrix(corr_mat, true_corr_mat, x)

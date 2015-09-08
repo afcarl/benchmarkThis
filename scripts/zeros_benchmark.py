@@ -16,7 +16,8 @@ from scipy.stats import spearmanr
 import matplotlib
 import biom
 from roc import plot_roc, plot_recall
-from metrics import confusion_evaluate, mean_sq_distance
+from metrics import (confusion_evaluate, mean_sq_distance,
+                     variation_distance)
 from composition import (multiplicative_replacement,
                          coverage_replacement,
                          closure)
@@ -123,7 +124,7 @@ prec_fig.savefig('../results/zeros/random_rare_eco_pre_recall_curve.png')
 
 np.random.seed(0)
 plt.rc('legend', **{'fontsize': 12})
-
+plt.rc('text', usetex=True)
 
 num_species = 10000
 num_samps = 100
@@ -135,7 +136,7 @@ pdf_dict = {
 depths = np.linspace(2000, 20000, 10)
 disp_depths = np.linspace(2000, 20000, 4)
 u, v = 0, 0
-fig, axes = plt.subplots(2, 2, sharey=True)
+fig, axes = plt.subplots(2, 2, figsize=(8, 8), sharey=True)
 for pdf, pval in pdf_dict.items():
     mult_mean = []
     robbins_mean = []
@@ -166,7 +167,7 @@ for pdf, pval in pdf_dict.items():
         axes[u][v].set_xticklabels([])
         axes[u][v].legend(loc=3)
     if u == 1:
-        axes[u][v].set_xlabel('Sequencing depth')
+        axes[u][v].set_xlabel('(a) Sampling depth')
         axes[u][v].set_xticks(disp_depths)
         axes[u][v].set_xticklabels(disp_depths)
 
@@ -196,7 +197,7 @@ pdf_dict = {
     'Uniform': np.random.uniform(5000, 15000, size=num_species)
 }
 u, v = 0, 1
-logdeltas = np.linspace(-12, -4, 10)
+logdeltas = np.linspace(-12, -3.75, 10)
 deltas = 10 ** logdeltas
 # fig, axes = plt.subplots(2, sharey=True)
 depth = 20000
@@ -228,14 +229,71 @@ for pdf, pval in pdf_dict.items():
     if u == 0:
         axes[u][v].set_xticklabels([])
     if u == 1:
-        axes[u][v].set_xlabel(r'$\displaystyle\delta$')
+        axes[u][v].set_xlabel(r"(b)$\; \displaystyle\delta$")
     # axes[u][v].set_title('%s distribution' % pdf, fontsize=14)
     axes[u][v].get_xaxis().get_major_formatter().labelOnlyBase = False
-    axR = axes[u][v].twinx()
-    axR.set_yticks([])
-    axR.set_ylabel('%s distribution' % pdf, fontsize=14)
     u += 1
 
 fig.suptitle('Distortion on Zero replacement', fontsize=18)
 fig.tight_layout(rect=[0, 0.03, 1, 0.95])
 fig.savefig('../results/zeros/distortion.png')
+
+#######################################################################
+#                          TVD vs Delta                               #
+#######################################################################
+np.random.seed(0)
+# plt.rc('legend', **{'fontsize': 12})
+
+num_species = 10000
+num_samps = 100
+pdf_dict = {
+    'Geometric': np.random.geometric(1/num_species, size=num_species),
+    'Uniform': np.random.uniform(5000, 15000, size=num_species)
+}
+u, v = 0, 0
+logdeltas = np.linspace(-12, -3.75, 10)
+deltas = 10 ** logdeltas
+fig, axes = plt.subplots(2, 1, figsize=(4.5, 8), sharey=True)
+depth = 20000
+for pdf, pval in pdf_dict.items():
+    mult_mean = []
+    robbins_mean = []
+    pvals = closure(pval)
+
+    for delta in deltas:
+
+        samp_table = np.array([np.random.multinomial(n=depth, pvals=pvals)
+                               for i in range(num_samps)])
+
+        mrsamp_table = multiplicative_replacement(samp_table, delta=delta)
+        rrsamp_table = coverage_replacement(samp_table,
+                                            uncovered_estimator=robbins)
+
+        # Get the mean TVD
+        truth = np.tile(pvals, (num_samps, 1))
+        mr_msd = 0.5*abs(mrsamp_table - truth).sum(axis=1)
+        rr_msd = 0.5*abs(rrsamp_table - truth).sum(axis=1)
+        mult_mean.append(np.mean(mr_msd))
+        robbins_mean.append(np.mean(rr_msd))
+
+    axes[u].semilogx(deltas, mult_mean,
+                     '-ob', label='Multiplicative')
+    axes[u].semilogx(deltas, robbins_mean,
+                     '-or', label='Robbins')
+    if u == 0:
+        axes[u].set_xticklabels([])
+    if u == 1:
+        axes[u].set_xlabel(r"(c)$\; \displaystyle\delta$")
+    # axes[u].set_title('%s distribution' % pdf, fontsize=14)
+    axes[u].get_xaxis().get_major_formatter().labelOnlyBase = False
+    axR = axes[u].twinx()
+    axR.set_yticks([])
+    axR.set_ylabel('%s distribution' % pdf, fontsize=14)
+    u += 1
+
+fig.text(0.005, 0.5, 'Total Variation Distance',
+         va='center', rotation='vertical')
+
+fig.suptitle('TVD on Zero replacement', fontsize=18)
+fig.tight_layout(rect=[0, 0.03, 1, 0.95])
+fig.savefig('../results/zeros/tvd_delta.png')

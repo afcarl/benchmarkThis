@@ -11,7 +11,6 @@ from generators.ecological import *
 These tables are modeled after TableFactory_3613.py
 """
 
-
 def getParams(dims=[1, 2], sts=[5, 3, 2],
               interactions=['amensal',
                             'commensal',
@@ -125,10 +124,6 @@ def init_data(params, num_groups=30, num_samps=50):
               adjancency matrix
            name : str
               name of the interaction
-    Note
-    ----
-    This is currently ignoring the difference between positive correlation and
-    negative correlation
     """
     D, S = num_groups, num_samps
     # Start filling in some tables
@@ -154,7 +149,14 @@ def init_data(params, num_groups=30, num_samps=50):
                     obs_otu = func(os[idx], strength)
 
             params[k]['data'][:, idx] = np.vstack(obs_otu).T
-            params[k]['truth'][idx[:-1], idx[-1]] = 1
+
+            if params[k]['name'] in {'commensal', 'mutual',
+                                     'obligate_syntroph',
+                                     'partial_obligate_syntroph'}:
+                params[k]['truth'][idx[:-1], idx[-1]] = 1
+            if params[k]['name'] in {'amensal', 'parasite', 'competition'}:
+                params[k]['truth'][idx[:-1], idx[-1]] = -1
+
     return params
 
 

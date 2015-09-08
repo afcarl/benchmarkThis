@@ -225,11 +225,15 @@ def coverage_replacement(count_mat, uncovered_estimator=lladser_pe):
     z_mat = (mat == 0)
 
     tot = z_mat.sum(axis=-1)
+    if sum(tot) == 0:
+        return mat
 
     def func(x):
         up = uncovered_estimator(x)
-        if up > 1:
-            return 1 - 1 / sum(x)
+        if up >= 1:
+            return 1 - 0.999999 / x.sum()
+        elif up <= 0:
+            return 0.999999 / x.sum()
         else:
             return up
 
@@ -537,7 +541,7 @@ def clr(mat):
     If there are zeros present, only the nonzero components are considered
     """
     mat = closure(mat)
-    lmat = np.log(mat)
+    lmat = np.atleast_2d(np.log(mat))
 
     # If zeros are present, only consider the nonzero components
     idx = (lmat != -np.inf).astype(np.int)

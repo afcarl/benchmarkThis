@@ -48,7 +48,7 @@ def zhengr(x, y):
     y_idx = (y > 0)
     # Drop zeros
     idx = np.logical_and(x_idx, y_idx)
-    _x, _y = np.log(x[idx]), np.log(y[idx])
+    _x, _y = clr(x[idx]), clr(y[idx])
     return 2*np.cov(_x, _y)[1, 0] / (np.var(_x) + np.var(_y))
 
 
