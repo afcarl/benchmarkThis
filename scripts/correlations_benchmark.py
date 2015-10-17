@@ -163,7 +163,7 @@ params = getParams(sts=[11],
                        'competition'
                        ])
 
-params = init_data(params, num_samps=500)
+params = init_data(params, num_samps=5000)
 corr_mat = build_correlation_matrix(params)
 table = build_contingency_table(params)
 

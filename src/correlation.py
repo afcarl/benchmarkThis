@@ -21,12 +21,12 @@ def lovellr(x, y):
     float : proportional goodness of fit
     """
     x, y = np.array(x), np.array(y)
-    x_idx = (x > 0)
-    y_idx = (y > 0)
-    # Drop zeros
-    idx = np.logical_and(x_idx, y_idx)
-    m = np.vstack((x[idx], y[idx])).T
-    _x, _y = clr(m).T
+    # x_idx = (x > 0)
+    # y_idx = (y > 0)
+    # # Drop zeros
+    # idx = np.logical_and(x_idx, y_idx)
+    # m = np.vstack((x[idx], y[idx])).T
+    # _x, _y = clr(m).T
     return np.var(_x - _y) / np.var(_x)
 
 
@@ -43,12 +43,12 @@ def zhengr(x, y):
     -------
     float : proportional correlation coefficient
     """
-    x, y = np.array(x), np.array(y)
-    x_idx = (x > 0)
-    y_idx = (y > 0)
-    # Drop zeros
-    idx = np.logical_and(x_idx, y_idx)
-    _x, _y = clr(x[idx]), clr(y[idx])
+    _x, _y = np.array(x), np.array(y)
+    # x_idx = (x > 0)
+    # y_idx = (y > 0)
+    # # Drop zeros
+    # idx = np.logical_and(x_idx, y_idx)
+    # _x, _y = clr(x[idx]), clr(y[idx])
     return 2*np.cov(_x, _y)[1, 0] / (np.var(_x) + np.var(_y))
 
 

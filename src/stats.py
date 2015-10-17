@@ -4,7 +4,7 @@ from scipy.stats import chi2
 from scipy.sparse.linalg import eigsh
 from composition import closure
 from util import check_random_state
-
+import scipy.stats as stats
 
 def robbins_variance(x):
     """
@@ -117,3 +117,28 @@ def multinomial_bootstrap_ci(count_vec, uncovered_estimator,
     LB_cover = np.percentile(boot_p_unobs, alpha/2 * 100)
     UB_cover = np.percentile(boot_p_unobs, (1-alpha/2) * 100)
     return LB_p, UB_p, LB_cover, UB_cover
+
+
+def binomial_test(count_vec1, count_vec2):
+    """
+    Performs a two-sided binomial test to test for the difference between
+    count vectors 1 and 2
+
+    Parameters
+    ----------
+    count_vec1 : array_like, int
+       First count vector
+    count_vec2 : array_like, int
+       Second count vector
+
+    Returns
+    -------
+    p_val : array_like, float
+       The p-values of the hypothesis tests
+    """
+    assert len(count_vec1) == len(count_vec2), 'vectors need to be of the same length'
+    tot = sum(count_vec1)
+    pvals = np.zeros((len(count_vec1))
+    for i in range(len(count_vec1)):
+        pvals[i] = stats.binom_test(count_vec1[i], tot, prop=count_vec2[i])
+    return pvals

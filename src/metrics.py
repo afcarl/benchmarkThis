@@ -93,7 +93,6 @@ def variation_distance(p1, p2):
     p1, p2 = closure(p1), closure(p2)
     return 0.5*abs((p1-p2)).sum()
 
-
 def confusion_evaluate(corr_mat, meas_corrs, method_names):
     """
     Determine sensitivity, specificity and precision
@@ -184,8 +183,8 @@ def unifrac(p1, p2, sample_ids, otu_ids, tree):
     np.array :
        Unifrac distance matrix
     """
-    df = pd.DataFrame([p1, p2], index=sample_ids, columns=otu_ids)
     env = df.to_dict()
+    df = pd.DataFrame([p1, p2], index=sample_ids, columns=otu_ids)
     res = fast_unifrac(tree, env, weighted=True)
     dist_mat = pd.DataFrame(res['distance_matrix'][0],
                             index=res['distance_matrix'][1],

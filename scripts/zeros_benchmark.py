@@ -118,6 +118,44 @@ prec_fig = plot_recall(metric_df, ['-ob', '-og', '-or', '-om'], loc=None)
 roc_fig.savefig('../results/zeros/random_rare_eco_roc_curve.png')
 prec_fig.savefig('../results/zeros/random_rare_eco_pre_recall_curve.png')
 
+
+#######################################################################
+#                   Random rarefaction correlation  (zeros)           #
+#######################################################################
+font = {'family': 'normal',
+        'weight': 'normal',
+        'size': 13}
+
+matplotlib.rc('font', **font)
+
+samp_table = np.apply_along_axis(
+    lambda p: np.random.multinomial(n=10000,
+                                    pvals=p),
+    axis=1, arr=pvals)
+
+mrsamp_table = multiplicative_replacement(samp_table)
+lrsamp_table = coverage_replacement(samp_table)
+rrsamp_table = coverage_replacement(samp_table,
+                                    uncovered_estimator=robbins)
+
+# zheng_corr_mat = get_corr_matrix(samp_table, zheng)
+mrzheng_corr_mat = get_corr_matrix(clr(mrsamp_table), zheng)
+rrzheng_corr_mat = get_corr_matrix(clr(rrsamp_table), zheng)
+
+metric_df = confusion_evaluate(corr_mat, [# zheng_corr_mat,
+                                          mrzheng_corr_mat,
+                                          rrzheng_corr_mat],
+                                         [# 'Lovell',
+                                          'Multiplicative Lovell',
+                                          'Robbins Lovell'])
+
+roc_fig = plot_roc(metric_df, ['-ob', '-or'])
+prec_fig = plot_recall(metric_df, ['-ob','-or'])
+
+roc_fig.savefig('../results/zeros/zeros_corr_roc_curve.png')
+prec_fig.savefig('../results/zeros/zeros_corr_pre_recall_curve.png')
+
+
 #######################################################################
 #                   Distortion vs Rarefaction depth                   #
 #######################################################################

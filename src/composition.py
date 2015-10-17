@@ -99,7 +99,7 @@ array([ 0.25,  0.25,  0.5 ])
 from __future__ import absolute_import, division, print_function
 import numpy as np
 import scipy.stats as ss
-from skbio.diversity.alpha import lladser_pe
+from skbio.diversity.alpha import lladser_pe, robbins
 
 
 def closure(mat):
@@ -194,7 +194,7 @@ def multiplicative_replacement(mat, delta=None):
     return mat.squeeze()
 
 
-def coverage_replacement(count_mat, uncovered_estimator=lladser_pe):
+def coverage_replacement(count_mat, uncovered_estimator=robbins):
     r"""Replace all zeros with small non-zero values
     using a coverage estimator
 
@@ -222,11 +222,10 @@ def coverage_replacement(count_mat, uncovered_estimator=lladser_pe):
 
     """
     mat = closure(count_mat)
+    mat = np.atleast_2d(mat)
     z_mat = (mat == 0)
 
     tot = z_mat.sum(axis=-1)
-    if sum(tot) == 0:
-        return mat
 
     def func(x):
         up = uncovered_estimator(x)
@@ -239,8 +238,13 @@ def coverage_replacement(count_mat, uncovered_estimator=lladser_pe):
 
     p_unobs = np.apply_along_axis(func,
                                   -1, count_mat)
-    delta = p_unobs / tot
-
+    delta = np.zeros(len(p_unobs))
+    for i in range(len(p_unobs)):
+        if tot[i] == 0:
+            delta[i] = 0
+        else:
+            delta[i] = p_unobs[i] / tot[i]
+    # delta = p_unobs / tot
     p_obs = 1 - p_unobs
     p_obs = np.repeat(p_obs[np.newaxis, :],
                       mat.shape[-1], 0).T

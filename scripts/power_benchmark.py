@@ -283,7 +283,7 @@ ax2.set_ylabel('False Negative Rate')
 fig2.savefig(fname)
 
 ########################################################
-# Percent Rarefaction
+# Power of binomial test vs corrected binomial test
 #
 # Alpha (fdr) versus percent rarefaction
 # Beta (power) versus percent rarefaction
